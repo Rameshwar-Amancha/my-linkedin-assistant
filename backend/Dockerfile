@@ -9,7 +9,7 @@ RUN pip install --upgrade pip \
     && pip install --no-cache-dir -r requirements.txt \
     && rm -rf /root/.cache/pip
 
-COPY . .
+COPY backend/ .
 
 RUN mkdir -p /data && chown appuser:appuser /data
 
