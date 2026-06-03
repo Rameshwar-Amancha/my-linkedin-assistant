@@ -1,0 +1,547 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta http-equiv="Content-Security-Policy" content="script-src 'self'; object-src 'none';" />
+  <title>LinkedIn Engagement Assistant</title>
+  <link rel="stylesheet" href="sidebar.css" />
+</head>
+<body>
+  <div class="sidebar" id="app">
+
+    <!-- Header -->
+    <header class="sidebar__header">
+      <div class="sidebar__brand">
+        <span class="brand-icon" aria-hidden="true">✦</span>
+        <span class="brand-name">Engagement Assistant</span>
+      </div>
+      <div class="header-actions">
+        <span class="connection-badge" id="connectionBadge" title="Backend status">●</span>
+        <button class="icon-btn" id="btnSettings" title="Settings" aria-label="Settings" type="button">⚙</button>
+      </div>
+    </header>
+
+    <!-- Tab Navigation -->
+    <nav class="sidebar__tabs" role="tablist" aria-label="Sidebar sections">
+      <button class="tab-btn tab-btn--active" role="tab" aria-selected="true"
+        aria-controls="tabTrends" id="tabBtnTrends" data-tab="trends" type="button">Trends</button>
+      <button class="tab-btn" role="tab" aria-selected="false"
+        aria-controls="tabDrafts" id="tabBtnDrafts" data-tab="drafts" type="button">Drafts</button>
+      <button class="tab-btn" role="tab" aria-selected="false"
+        aria-controls="tabCompose" id="tabBtnCompose" data-tab="compose" type="button">Compose</button>
+      <button class="tab-btn" role="tab" aria-selected="false"
+        aria-controls="tabCalendar" id="tabBtnCalendar" data-tab="calendar" type="button">Calendar</button>
+      <button class="tab-btn" role="tab" aria-selected="false"
+        aria-controls="tabAnalyze" id="tabBtnAnalyze" data-tab="analyze" type="button">Analyze</button>
+      <button class="tab-btn" role="tab" aria-selected="false"
+        aria-controls="tabAnalytics" id="tabBtnAnalytics" data-tab="analytics" type="button">Analytics</button>
+      <button class="tab-btn" role="tab" aria-selected="false"
+        aria-controls="tabGrowth" id="tabBtnGrowth" data-tab="growth" type="button">Growth</button>
+      <button class="tab-btn" role="tab" aria-selected="false"
+        aria-controls="tabAuthority" id="tabBtnAuthority" data-tab="authority" type="button">Authority</button>
+    </nav>
+
+    <!-- Tab: Trends -->
+    <section class="tab-panel tab-panel--active" id="tabTrends" role="tabpanel" aria-labelledby="tabBtnTrends">
+      <div class="panel-toolbar">
+        <button class="icon-text-btn" id="btnRefreshTrends" type="button">⟳ Refresh</button>
+        <select class="mini-select" id="trendsCategory">
+          <option value="">All Topics</option>
+          <option value="tech">Technology</option>
+          <option value="business">Business</option>
+          <option value="ai">AI / ML</option>
+          <option value="leadership">Leadership</option>
+          <option value="startups">Startups</option>
+        </select>
+      </div>
+      <div class="trends-list" id="trendsList" aria-live="polite">
+        <div class="loading-state" id="trendsLoading">Loading trends...</div>
+      </div>
+    </section>
+
+    <!-- Tab: Drafts -->
+    <section class="tab-panel" id="tabDrafts" role="tabpanel" aria-labelledby="tabBtnDrafts" hidden>
+      <div class="panel-toolbar">
+        <input class="search-input" id="draftsSearch" type="search" placeholder="Search drafts..." aria-label="Search drafts" />
+        <button class="icon-text-btn" id="btnExportDrafts" type="button" title="Export drafts as CSV">↓ Export</button>
+      </div>
+      <div class="drafts-list" id="sidebarDraftsList" aria-live="polite">
+        <p class="empty-state">No drafts saved yet. Generate AI replies to save them here.</p>
+      </div>
+    </section>
+
+    <!-- Tab: Compose Post -->
+    <section class="tab-panel" id="tabCompose" role="tabpanel" aria-labelledby="tabBtnCompose" hidden>
+      <div class="compose-form">
+        <div class="form-group">
+          <label class="form-label" for="composeTopic">Topic or idea</label>
+          <textarea class="form-textarea" id="composeTopic" rows="3"
+            placeholder="e.g. What I learned from 5 years of remote work..." maxlength="800"></textarea>
+          <div class="char-count"><span id="composeTopicCount">0</span>/800</div>
+        </div>
+
+        <div class="form-row-2col">
+          <div class="form-group">
+            <label class="form-label" for="composeStyle">Style</label>
+            <select class="form-select" id="composeStyle">
+              <option value="professional">Professional</option>
+              <option value="educational">Educational</option>
+              <option value="founder">Founder Story</option>
+              <option value="technical">Technical</option>
+              <option value="viral">Viral / Hook</option>
+              <option value="concise_authority">Concise Authority</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="composeTone">Tone</label>
+            <select class="form-select" id="composeTone">
+              <option value="professional">Professional</option>
+              <option value="concise">Concise</option>
+              <option value="expert">Expert</option>
+              <option value="contrarian">Contrarian</option>
+              <option value="founder">Founder</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-row-2col">
+          <div class="form-group">
+            <label class="form-label" for="composePersona">Persona</label>
+            <select class="form-select" id="composePersona">
+              <option value="senior_engineer">Senior Engineer</option>
+              <option value="product_manager">PM</option>
+              <option value="executive">Executive</option>
+              <option value="entrepreneur">Entrepreneur</option>
+              <option value="researcher">Researcher</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="composeVariations">Variations</label>
+            <select class="form-select" id="composeVariations">
+              <option value="1">1</option>
+              <option value="2">2</option>
+              <option value="3" selected>3</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="compose-options">
+          <label class="checkbox-label">
+            <input type="checkbox" id="composeIncludeCta" checked />
+            Include CTA
+          </label>
+          <label class="checkbox-label">
+            <input type="checkbox" id="composeIncludeHashtags" checked />
+            Hashtags
+          </label>
+        </div>
+
+        <button class="btn-primary btn-full" id="btnCompose" type="button">
+          ✦ Generate Post
+        </button>
+      </div>
+
+      <div class="compose-results" id="composeResults" hidden aria-live="polite">
+        <div class="results-header">
+          <span class="results-title">Generated Variations</span>
+          <button class="icon-text-btn" id="btnRegenerate" type="button">⟳ Regenerate</button>
+        </div>
+        <div class="variations-list" id="variationsList"></div>
+      </div>
+    </section>
+
+    <!-- Tab: Analyze -->
+    <section class="tab-panel" id="tabAnalyze" role="tabpanel" aria-labelledby="tabBtnAnalyze" hidden>
+      <div class="analyze-form">
+        <div class="form-group">
+          <label class="form-label" for="analyzeContent">Paste post content</label>
+          <textarea class="form-textarea" id="analyzeContent" rows="5"
+            placeholder="Paste a LinkedIn post here to analyze its quality, hook strength, and engagement potential..."
+            maxlength="3000"></textarea>
+        </div>
+        <button class="btn-primary btn-full" id="btnAnalyze" type="button">
+          ◈ Analyze Post
+        </button>
+      </div>
+
+      <div class="analyze-results" id="analyzeResults" hidden aria-live="polite">
+        <div class="score-card" id="scoreCard"></div>
+        <div class="recommendations" id="recommendations"></div>
+      </div>
+    </section>
+
+    <!-- Tab: Analytics (Extension usage dashboard) -->
+    <section class="tab-panel" id="tabAnalytics" role="tabpanel" aria-labelledby="tabBtnAnalytics" hidden>
+      <div class="panel-toolbar">
+        <span class="panel-title">Extension Usage</span>
+        <button class="icon-text-btn" id="btnRefreshAnalytics" type="button">⟳ Refresh</button>
+      </div>
+
+      <!-- Today at a glance — 3 metric cards -->
+      <h3 class="analytics-section-title">Today</h3>
+      <div class="analytics-summary" id="analyticsSummary">
+        <div class="metric-card">
+          <div class="metric-value" id="metricTodayReplies">0</div>
+          <div class="metric-label">Replies</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-value" id="metricTodayPosts">0</div>
+          <div class="metric-label">Posts</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-value" id="metricTodayTokens">0</div>
+          <div class="metric-label">Tokens</div>
+        </div>
+      </div>
+
+      <!-- All-time stats list -->
+      <h3 class="analytics-section-title">All-time</h3>
+      <div class="usage-stats-list" id="usageStatsList">
+        <div class="usage-stat-row">
+          <span class="usage-stat-label">LLM Provider</span>
+          <span class="usage-stat-value" id="usageStatProvider">—</span>
+        </div>
+        <div class="usage-stat-row">
+          <span class="usage-stat-label">Replies drafted</span>
+          <span class="usage-stat-value" id="usageStatReplies">0</span>
+        </div>
+        <div class="usage-stat-row">
+          <span class="usage-stat-label">Posts generated</span>
+          <span class="usage-stat-value" id="usageStatPosts">0</span>
+        </div>
+        <div class="usage-stat-row">
+          <span class="usage-stat-label">Analyses run</span>
+          <span class="usage-stat-value" id="usageStatAnalyses">0</span>
+        </div>
+        <div class="usage-stat-row">
+          <span class="usage-stat-label">Total API calls</span>
+          <span class="usage-stat-value" id="usageStatRequests">0</span>
+        </div>
+        <div class="usage-stat-row">
+          <span class="usage-stat-label">Total tokens used</span>
+          <span class="usage-stat-value" id="usageStatTokens">0</span>
+        </div>
+        <div class="usage-stat-row">
+          <span class="usage-stat-label">Last used</span>
+          <span class="usage-stat-value" id="usageStatLastUsed">—</span>
+        </div>
+      </div>
+
+      <div class="analytics-actions">
+        <button class="icon-text-btn" id="btnResetUsageStats" type="button">↺ Reset all counters</button>
+      </div>
+    </section>
+
+    <!-- Tab: Calendar -->
+    <section class="tab-panel" id="tabCalendar" role="tabpanel" aria-labelledby="tabBtnCalendar" hidden>
+      <div class="panel-toolbar">
+        <button class="icon-text-btn" id="btnNewCalendarPost" type="button">+ Schedule Post</button>
+        <select class="mini-select" id="calendarStatusFilter">
+          <option value="">All</option>
+          <option value="scheduled">Scheduled</option>
+          <option value="draft">Draft</option>
+          <option value="published">Published</option>
+        </select>
+      </div>
+
+      <!-- New post form (hidden by default) -->
+      <div class="calendar-form" id="calendarForm" hidden>
+        <div class="form-group">
+          <label class="form-label" for="calendarTitle">Title</label>
+          <input class="form-input" type="text" id="calendarTitle" placeholder="Post title..." maxlength="200" />
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="calendarContent">Content</label>
+          <textarea class="form-textarea" id="calendarContent" rows="4"
+            placeholder="Paste your drafted post content here..." maxlength="3000"></textarea>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="calendarScheduledFor">Schedule For</label>
+          <input class="form-input" type="datetime-local" id="calendarScheduledFor" />
+        </div>
+        <div class="form-row-2col">
+          <button class="btn-primary" id="btnSaveCalendarPost" type="button">Save</button>
+          <button class="btn-secondary" id="btnCancelCalendarPost" type="button">Cancel</button>
+        </div>
+      </div>
+
+      <div class="calendar-list" id="calendarList" aria-live="polite">
+        <p class="empty-state">No scheduled posts. Click "+ Schedule Post" to add one.</p>
+      </div>
+    </section>
+
+    <!-- Settings Panel (overlay) -->
+    <div class="settings-overlay" id="settingsOverlay" hidden role="dialog" aria-modal="true" aria-labelledby="settingsTitle">
+      <div class="settings-panel">
+        <div class="settings-header">
+          <h2 class="settings-title" id="settingsTitle">Settings</h2>
+          <button class="icon-btn" id="btnCloseSettings" aria-label="Close settings" type="button">✕</button>
+        </div>
+        <div class="settings-body">
+          <div class="form-group">
+            <label class="form-label" for="settingsBackendUrl">Backend URL</label>
+            <input class="form-input" type="url" id="settingsBackendUrl"
+              placeholder="http://localhost:8000" />
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="settingsApiKey">API Key</label>
+            <input class="form-input" type="password" id="settingsApiKey"
+              placeholder="Your API secret key" autocomplete="off" />
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="settingsLlmProvider">LLM Provider</label>
+            <select class="form-select" id="settingsLlmProvider">
+              <option value="openai">OpenAI</option>
+              <option value="gemini">Google Gemini</option>
+              <option value="anthropic">Anthropic</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="checkbox-label">
+              <input type="checkbox" id="settingsDebugMode" />
+              Debug mode
+            </label>
+          </div>
+        </div>
+        <div class="settings-footer">
+          <button class="btn-primary" id="btnSaveSettings" type="button">Save Settings</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tab: Growth -->
+    <section class="tab-panel" id="tabGrowth" role="tabpanel" aria-labelledby="tabBtnGrowth" hidden>
+
+      <!-- Time Tracker Widget -->
+      <div class="growth-section">
+        <div class="growth-section-header">
+          <span class="growth-section-icon">⏱</span>
+          <h3 class="growth-section-title">LinkedIn Time Tracker</h3>
+          <button class="icon-text-btn" id="btnRefreshTime" type="button" title="Refresh time data">⟳</button>
+        </div>
+        <div class="time-tracker-grid" id="timeTrackerGrid">
+          <div class="time-metric-card">
+            <div class="time-metric-value" id="timeToday">—</div>
+            <div class="time-metric-label">Today (min)</div>
+          </div>
+          <div class="time-metric-card time-metric-card--productive">
+            <div class="time-metric-value" id="timeTodayProductive">—</div>
+            <div class="time-metric-label">Productive (min)</div>
+          </div>
+          <div class="time-metric-card">
+            <div class="time-metric-value" id="timeWeek">—</div>
+            <div class="time-metric-label">This Week (min)</div>
+          </div>
+          <div class="time-metric-card time-metric-card--focus">
+            <div class="time-metric-value" id="timeFocusRatio">—</div>
+            <div class="time-metric-label">Focus %</div>
+          </div>
+        </div>
+        <div class="time-goal-row">
+          <label class="form-label" for="timeDailyGoal">Daily goal (min)</label>
+          <input class="form-input form-input--compact" type="number" id="timeDailyGoal"
+            min="5" max="480" placeholder="30" />
+          <button class="btn-secondary btn-sm" id="btnSaveTimeGoal" type="button">Save</button>
+        </div>
+        <div class="time-progress-bar-wrap" id="timeProgressWrap" hidden>
+          <div class="time-progress-label">
+            <span id="timeProgressLabel">0 / 30 min today</span>
+            <span id="timeProgressPct">0%</span>
+          </div>
+          <div class="time-progress-bar">
+            <div class="time-progress-fill" id="timeProgressFill" style="width:0%"></div>
+          </div>
+        </div>
+        <div class="time-breakdown" id="timeBreakdown" aria-live="polite">
+          <p class="empty-state">Loading time data...</p>
+        </div>
+        <div class="time-insights" id="timeInsights" hidden aria-live="polite"></div>
+      </div>
+
+      <!-- Optimal Posting Times -->
+      <div class="growth-section">
+        <div class="growth-section-header">
+          <span class="growth-section-icon">📅</span>
+          <h3 class="growth-section-title">Best Posting Times</h3>
+          <button class="icon-text-btn" id="btnLoadOptimalTimes" type="button">Load</button>
+        </div>
+        <div class="optimal-times-container" id="optimalTimesContainer" hidden aria-live="polite">
+          <div class="best-times-summary" id="bestTimesSummary"></div>
+          <div class="timing-heatmap" id="timingHeatmap"></div>
+          <p class="timing-note" id="timingNote"></p>
+        </div>
+      </div>
+
+      <!-- Hashtag Optimizer -->
+      <div class="growth-section">
+        <div class="growth-section-header">
+          <span class="growth-section-icon">#</span>
+          <h3 class="growth-section-title">Hashtag Optimizer</h3>
+        </div>
+        <div class="form-group">
+          <input class="form-input" type="text" id="hashtagTopic"
+            placeholder="Post topic (e.g. AI in product management)..." maxlength="300" />
+        </div>
+        <div class="form-group">
+          <input class="form-input" type="text" id="hashtagAudience"
+            placeholder="Target audience (optional)..." maxlength="200" />
+        </div>
+        <button class="btn-primary btn-full" id="btnOptimizeHashtags" type="button">
+          # Optimize Hashtags
+        </button>
+        <div class="hashtag-results" id="hashtagResults" hidden aria-live="polite">
+          <div class="hashtag-group" id="primaryHashtags"></div>
+          <div class="hashtag-group" id="secondaryHashtags"></div>
+          <div class="hashtag-avoid" id="avoidHashtags"></div>
+        </div>
+      </div>
+
+      <!-- Algorithm Score -->
+      <div class="growth-section">
+        <div class="growth-section-header">
+          <span class="growth-section-icon">⚡</span>
+          <h3 class="growth-section-title">Algorithm Score</h3>
+        </div>
+        <div class="form-group">
+          <textarea class="form-textarea" id="algorithmContent" rows="4"
+            placeholder="Paste your post draft to score it for LinkedIn algorithm distribution..."
+            maxlength="3000"></textarea>
+        </div>
+        <div class="form-row-2col">
+          <div class="form-group">
+            <label class="form-label" for="algorithmDay">Day (optional)</label>
+            <select class="form-select" id="algorithmDay">
+              <option value="">Select day</option>
+              <option value="monday">Monday</option>
+              <option value="tuesday">Tuesday</option>
+              <option value="wednesday">Wednesday</option>
+              <option value="thursday">Thursday</option>
+              <option value="friday">Friday</option>
+              <option value="saturday">Saturday</option>
+              <option value="sunday">Sunday</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="algorithmHour">Hour (optional)</label>
+            <select class="form-select" id="algorithmHour">
+              <option value="">Select hour</option>
+              <option value="6">6am</option>
+              <option value="7">7am</option>
+              <option value="8">8am</option>
+              <option value="9">9am</option>
+              <option value="10">10am</option>
+              <option value="11">11am</option>
+              <option value="12">12pm</option>
+              <option value="13">1pm</option>
+              <option value="14">2pm</option>
+              <option value="15">3pm</option>
+              <option value="16">4pm</option>
+              <option value="17">5pm</option>
+              <option value="18">6pm</option>
+              <option value="19">7pm</option>
+            </select>
+          </div>
+        </div>
+        <div class="compose-options">
+          <label class="checkbox-label">
+            <input type="checkbox" id="algorithmHasMedia" />
+            Includes image / video / PDF
+          </label>
+        </div>
+        <button class="btn-primary btn-full" id="btnAlgorithmScore" type="button">
+          ⚡ Score for Algorithm
+        </button>
+        <div class="algorithm-results" id="algorithmResults" hidden aria-live="polite">
+          <div class="algo-score-card" id="algoScoreCard"></div>
+          <div class="algo-suggestions" id="algoSuggestions"></div>
+          <div class="algo-first-comment" id="algoFirstComment" hidden></div>
+        </div>
+      </div>
+
+      <!-- Growth Tips -->
+      <div class="growth-section">
+        <div class="growth-section-header">
+          <span class="growth-section-icon">📈</span>
+          <h3 class="growth-section-title">Follower Growth Tips</h3>
+          <button class="icon-text-btn" id="btnLoadGrowthTips" type="button">Load Tips</button>
+        </div>
+        <div class="growth-tips-container" id="growthTipsContainer" hidden aria-live="polite">
+          <div class="weekly-focus" id="weeklyFocus"></div>
+          <div class="growth-tips-list" id="growthTipsList"></div>
+          <div class="growth-levers" id="growthLevers"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Tab: Authority -->
+    <section class="tab-panel" id="tabAuthority" role="tabpanel" aria-labelledby="tabBtnAuthority" hidden>
+
+      <!-- Authority Score Analyzer -->
+      <div class="growth-section">
+        <div class="growth-section-header">
+          <span class="growth-section-icon">🏆</span>
+          <h3 class="growth-section-title">Authority Score</h3>
+        </div>
+        <p class="section-description">
+          Paste 3–10 of your recent LinkedIn posts to get your authority score,
+          identify your expertise areas, and receive growth actions.
+        </p>
+        <div class="form-group">
+          <textarea class="form-textarea" id="authoritySamples" rows="6"
+            placeholder="Paste your LinkedIn posts here — separate each with ---
+
+Example:
+I spent 5 years building distributed systems at scale. Here's what I learned...
+
+---
+
+The biggest mistake engineers make when joining startups is..."
+            maxlength="8000"></textarea>
+          <div class="char-count"><span id="authoritySamplesCount">0</span>/8000</div>
+        </div>
+        <div class="form-group">
+          <input class="form-input" type="text" id="authorityContext"
+            placeholder="Your professional context (e.g. CTO, 10yr fintech experience)..." maxlength="300" />
+        </div>
+        <button class="btn-primary btn-full" id="btnAnalyzeAuthority" type="button">
+          🏆 Analyze Authority
+        </button>
+        <div class="authority-results" id="authorityResults" hidden aria-live="polite">
+          <div class="authority-score-display" id="authorityScoreDisplay"></div>
+          <div class="authority-topics" id="authorityTopics"></div>
+          <div class="authority-credibility" id="authorityCredibility"></div>
+          <div class="authority-summary-text" id="authoritySummaryText"></div>
+          <div class="authority-actions" id="authorityActionsContainer"></div>
+        </div>
+      </div>
+
+      <!-- Engagement Strategy -->
+      <div class="growth-section">
+        <div class="growth-section-header">
+          <span class="growth-section-icon">💬</span>
+          <h3 class="growth-section-title">Engagement Strategy</h3>
+          <button class="icon-text-btn" id="btnGetEngagementStrategy" type="button">Get Strategy</button>
+        </div>
+        <p class="section-description">
+          Get a strategic engagement plan — what to comment on, posting cadence,
+          comment templates, and content types that build YOUR authority.
+        </p>
+        <div class="engagement-strategy-container" id="engagementStrategyContainer" hidden aria-live="polite">
+          <div class="engagement-cadence" id="engagementCadence"></div>
+          <div class="engagement-overview" id="engagementOverview"></div>
+          <div class="engagement-topics" id="engagementTopics"></div>
+          <div class="comment-templates" id="commentTemplates"></div>
+          <div class="authority-content-types" id="authorityContentTypes"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Toast notification -->
+    <div class="toast" id="sidebarToast" role="status" aria-live="polite" hidden></div>
+
+  </div>
+
+  <script src="sidebar.js" type="module"></script>
+</body>
+</html>

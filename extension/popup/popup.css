@@ -1,0 +1,447 @@
+/* popup.css — LinkedIn Engagement Assistant popup styles */
+
+:root {
+  --color-primary: #0A66C2;
+  --color-primary-hover: #004182;
+  --color-bg: #ffffff;
+  --color-surface: #f3f2ef;
+  --color-border: #e0dfdc;
+  --color-text: #191919;
+  --color-text-secondary: #666666;
+  --color-success: #057642;
+  --color-error: #b74700;
+  --color-online: #057642;
+  --color-offline: #b74700;
+  --radius: 8px;
+  --shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
+  --font: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --color-bg: #1d2226;
+    --color-surface: #283339;
+    --color-border: #38434f;
+    --color-text: #e7e9ea;
+    --color-text-secondary: #8899a6;
+  }
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: var(--font);
+  font-size: 13px;
+  background: var(--color-bg);
+  color: var(--color-text);
+  width: 320px;
+  min-height: 200px;
+  max-height: 600px;
+  overflow-y: auto;
+}
+
+.popup {
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* Header */
+.popup__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.popup__logo {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 700;
+  font-size: 15px;
+  color: var(--color-primary);
+}
+
+.popup__logo-icon {
+  font-size: 18px;
+}
+
+.popup__status {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 11px;
+  color: var(--color-text-secondary);
+}
+
+.status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #ccc;
+  transition: background 0.3s;
+}
+
+.status-dot--online { background: var(--color-online); }
+.status-dot--offline { background: var(--color-offline); }
+
+/* Section */
+.popup__section {
+  background: var(--color-surface);
+  border-radius: var(--radius);
+  padding: 10px;
+}
+
+.section-title {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--color-text-secondary);
+  margin-bottom: 8px;
+}
+
+/* Quick actions grid */
+.quick-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+}
+
+.qa-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 10px;
+  background: var(--color-bg);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  color: var(--color-text);
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+}
+
+.qa-btn:hover {
+  background: var(--color-primary);
+  border-color: var(--color-primary);
+  color: #fff;
+}
+
+.qa-btn__icon {
+  font-size: 14px;
+}
+
+/* Form controls */
+.form-row {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-bottom: 8px;
+}
+
+.form-label {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--color-text-secondary);
+}
+
+.form-select,
+.form-textarea,
+.form-input {
+  width: 100%;
+  padding: 6px 8px;
+  border: 1px solid var(--color-border);
+  border-radius: 6px;
+  background: var(--color-bg);
+  color: var(--color-text);
+  font-family: var(--font);
+  font-size: 12px;
+  outline: none;
+  transition: border-color 0.15s;
+}
+
+.form-select:focus,
+.form-textarea:focus,
+.form-input:focus {
+  border-color: var(--color-primary);
+}
+
+.setup-warning {
+  background: #fff3cd;
+  color: #7a5800;
+  border: 1px solid #ffc107;
+  border-radius: 6px;
+  padding: 6px 8px;
+  font-size: 11px;
+  margin-bottom: 8px;
+  line-height: 1.4;
+}
+
+.form-textarea {
+  resize: vertical;
+  min-height: 52px;
+}
+
+.form-checkbox {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--color-text);
+  margin-bottom: 8px;
+  cursor: pointer;
+}
+
+/* Buttons */
+.btn-save,
+.btn-primary {
+  width: 100%;
+  padding: 7px 14px;
+  background: var(--color-primary);
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.btn-save:hover,
+.btn-primary:hover {
+  background: var(--color-primary-hover);
+}
+
+.btn-primary:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Result area */
+.result-area {
+  margin-top: 8px;
+  background: var(--color-bg);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  padding: 8px;
+}
+
+.post-result-text {
+  font-size: 12px;
+  white-space: pre-wrap;
+  word-break: break-word;
+  color: var(--color-text);
+  line-height: 1.5;
+  max-height: 160px;
+  overflow-y: auto;
+}
+
+.result-actions {
+  margin-top: 6px;
+  display: flex;
+  gap: 6px;
+}
+
+.btn-copy {
+  padding: 4px 10px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 5px;
+  font-size: 11px;
+  cursor: pointer;
+  color: var(--color-text);
+}
+
+.btn-copy:hover {
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+}
+
+/* Drafts */
+.drafts-list {
+  max-height: 200px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.draft-item {
+  background: var(--color-bg);
+  border: 1px solid var(--color-border);
+  border-radius: 6px;
+  padding: 7px 8px;
+}
+
+.draft-preview {
+  font-size: 11px;
+  color: var(--color-text);
+  line-height: 1.4;
+  margin-bottom: 5px;
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+
+.draft-actions {
+  display: flex;
+  gap: 5px;
+}
+
+/* -----------------------------------------------------------------------
+   LLM Usage card
+----------------------------------------------------------------------- */
+.usage-card {
+  background: var(--color-surface);
+  border-radius: 6px;
+  padding: 10px 12px;
+  margin: 10px 0;
+  border: 1px solid var(--color-border);
+  position: relative;
+}
+
+.usage-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 11px;
+  padding: 3px 0;
+  gap: 8px;
+}
+
+.usage-label {
+  color: var(--color-text-secondary, #888);
+  white-space: nowrap;
+}
+
+.usage-value {
+  color: var(--color-text);
+  font-weight: 500;
+  text-align: right;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 160px;
+}
+
+.btn-reset {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  background: none;
+  border: 1px solid var(--color-border);
+  border-radius: 4px;
+  font-size: 10px;
+  padding: 2px 6px;
+  cursor: pointer;
+  color: var(--color-text-secondary, #888);
+  line-height: 1.4;
+}
+
+.btn-reset:hover {
+  background: var(--color-surface);
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+}
+
+/* -----------------------------------------------------------------------
+   Privacy mode toggle
+----------------------------------------------------------------------- */
+.privacy-toggle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 11px;
+  color: var(--color-text-secondary, #888);
+  cursor: pointer;
+  padding: 6px 0;
+  user-select: none;
+}
+
+.privacy-toggle input[type="checkbox"] {
+  width: 13px;
+  height: 13px;
+  accent-color: var(--color-primary);
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.draft-btn {
+  padding: 3px 8px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 4px;
+  font-size: 10px;
+  cursor: pointer;
+  color: var(--color-text);
+}
+
+.draft-btn:hover {
+  border-color: var(--color-primary);
+}
+
+.draft-btn--danger:hover {
+  border-color: var(--color-error);
+  color: var(--color-error);
+}
+
+/* Empty state */
+.empty-state {
+  font-size: 12px;
+  color: var(--color-text-secondary);
+  text-align: center;
+  padding: 12px 0;
+}
+
+/* Error */
+.popup-error {
+  background: #fff3cd;
+  border: 1px solid #ffc107;
+  color: #856404;
+  border-radius: 6px;
+  padding: 6px 10px;
+  font-size: 11px;
+}
+
+/* Footer */
+.popup__footer {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 6px;
+  padding-top: 6px;
+  border-top: 1px solid var(--color-border);
+  font-size: 11px;
+  color: var(--color-text-secondary);
+}
+
+.footer-link {
+  background: none;
+  border: none;
+  color: var(--color-primary);
+  font-size: 11px;
+  cursor: pointer;
+  padding: 0;
+}
+
+.footer-link:hover {
+  text-decoration: underline;
+}
+
+.footer-divider {
+  color: var(--color-border);
+}
+
+.footer-version {
+  font-size: 10px;
+}

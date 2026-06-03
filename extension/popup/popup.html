@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta http-equiv="Content-Security-Policy" content="script-src 'self'; object-src 'none';" />
+  <title>LinkedIn Engagement Assistant</title>
+  <link rel="stylesheet" href="popup.css" />
+</head>
+<body>
+  <div class="popup" id="app">
+    <!-- Header -->
+    <header class="popup__header">
+      <div class="popup__logo">
+        <span class="popup__logo-icon" aria-hidden="true">✦</span>
+        <span class="popup__logo-text">LEA</span>
+      </div>
+      <div class="popup__status" id="statusIndicator" title="Backend connectivity">
+        <span class="status-dot" id="statusDot"></span>
+        <span class="status-label" id="statusLabel">Checking...</span>
+      </div>
+    </header>
+
+    <!-- Quick Actions -->
+    <section class="popup__section" aria-labelledby="quickActionsTitle">
+      <h2 class="section-title" id="quickActionsTitle">Quick Actions</h2>
+      <div class="quick-actions">
+        <button class="qa-btn" id="btnOpenSidebar" type="button">
+          <span class="qa-btn__icon" aria-hidden="true">◈</span>
+          <span>Open Sidebar</span>
+        </button>
+        <button class="qa-btn" id="btnGetTrends" type="button">
+          <span class="qa-btn__icon" aria-hidden="true">⚡</span>
+          <span>Trends</span>
+        </button>
+        <button class="qa-btn" id="btnNewPost" type="button">
+          <span class="qa-btn__icon" aria-hidden="true">✎</span>
+          <span>Generate Post</span>
+        </button>
+        <button class="qa-btn" id="btnDrafts" type="button">
+          <span class="qa-btn__icon" aria-hidden="true">📋</span>
+          <span>Drafts</span>
+        </button>
+      </div>
+    </section>
+
+    <!-- Persona & Tone -->
+    <section class="popup__section" aria-labelledby="settingsTitle">
+      <h2 class="section-title" id="settingsTitle">Session Settings</h2>
+      <div class="form-row">
+        <label class="form-label" for="toneSelect">Tone</label>
+        <select class="form-select" id="toneSelect">
+          <option value="professional">Professional</option>
+          <option value="concise">Concise</option>
+          <option value="expert">Expert Deep Dive</option>
+          <option value="contrarian">Contrarian</option>
+          <option value="founder">Founder Voice</option>
+          <option value="recruiter">Recruiter Warm</option>
+        </select>
+      </div>
+      <div class="form-row">
+        <label class="form-label" for="personaSelect">Persona</label>
+        <select class="form-select" id="personaSelect">
+          <option value="senior_engineer">Senior Engineer</option>
+          <option value="product_manager">Product Manager</option>
+          <option value="executive">Executive</option>
+          <option value="entrepreneur">Entrepreneur</option>
+          <option value="researcher">Researcher</option>
+          <option value="consultant">Consultant</option>
+        </select>
+      </div>
+      <button class="btn-save" id="btnSaveSession" type="button">Save</button>
+    </section>
+
+    <!-- Generate Post Panel (hidden by default) -->
+    <section class="popup__section popup__section--collapsible" id="generatePostPanel" aria-labelledby="generatePostTitle" hidden>
+      <h2 class="section-title" id="generatePostTitle">Generate Post</h2>
+      <div class="form-row">
+        <label class="form-label" for="postTopic">Topic</label>
+        <textarea class="form-textarea" id="postTopic" rows="2" placeholder="e.g. Lessons from shipping to 1M users" maxlength="500"></textarea>
+      </div>
+      <div class="form-row">
+        <label class="form-label" for="postStyle">Style</label>
+        <select class="form-select" id="postStyle">
+          <option value="professional">Professional</option>
+          <option value="educational">Educational</option>
+          <option value="founder">Founder Story</option>
+          <option value="technical">Technical Deep Dive</option>
+          <option value="viral">Viral / Hook-First</option>
+          <option value="concise_authority">Concise Authority</option>
+        </select>
+      </div>
+      <label class="form-checkbox">
+        <input type="checkbox" id="includeCta" checked />
+        Include CTA
+      </label>
+      <button class="btn-primary" id="btnGeneratePost" type="button">Generate</button>
+      <div class="result-area" id="postResult" hidden></div>
+    </section>
+
+    <!-- Drafts Panel (hidden by default) -->
+    <section class="popup__section popup__section--collapsible" id="draftsPanel" aria-labelledby="draftsPanelTitle" hidden>
+      <h2 class="section-title" id="draftsPanelTitle">Saved Drafts</h2>
+      <div class="drafts-list" id="draftsList">
+        <p class="empty-state">No saved drafts yet.</p>
+      </div>
+    </section>
+
+    <!-- Connection Settings (collapsible) -->
+    <section class="popup__section popup__section--collapsible" id="connectionPanel" aria-labelledby="connectionPanelTitle" hidden>
+      <h2 class="section-title" id="connectionPanelTitle">Connection Settings</h2>
+      <div id="setupWarning" class="setup-warning" hidden>
+        ⚠ API key not set — AI actions will fail until configured below.
+      </div>
+      <div class="form-row">
+        <label class="form-label" for="inputBackendUrl">Backend URL</label>
+        <input class="form-input" type="url" id="inputBackendUrl"
+          placeholder="http://localhost:8000" autocomplete="off" spellcheck="false" />
+      </div>
+      <div class="form-row">
+        <label class="form-label" for="inputApiKey">API Key</label>
+        <input class="form-input" type="password" id="inputApiKey"
+          placeholder="Paste your API_SECRET_KEY here" autocomplete="off" />
+      </div>
+
+      <!-- LLM Usage stats -->
+      <div class="usage-card" id="usageCard">
+        <div class="usage-row">
+          <span class="usage-label">Provider</span>
+          <span class="usage-value" id="usageProvider">—</span>
+        </div>
+        <div class="usage-row">
+          <span class="usage-label">Today</span>
+          <span class="usage-value" id="usageToday">—</span>
+        </div>
+        <div class="usage-row">
+          <span class="usage-label">All-time</span>
+          <span class="usage-value" id="usageTotal">—</span>
+        </div>
+        <button class="btn-reset" id="btnResetUsage" type="button" title="Reset counters">↺ Reset</button>
+      </div>
+
+      <!-- Privacy mode toggle -->
+      <label class="form-checkbox privacy-toggle">
+        <input type="checkbox" id="privacyMode" />
+        <span>Privacy mode — hide extension from page DOM</span>
+      </label>
+
+      <button class="btn-save" id="btnSaveConnection" type="button">Save</button>
+    </section>
+
+    <!-- Footer -->
+    <footer class="popup__footer">
+      <button class="footer-link" id="btnSettings" type="button">⚙ Settings</button>
+      <span class="footer-divider" aria-hidden="true">·</span>
+      <span class="footer-version" id="versionLabel"></span>
+    </footer>
+  </div>
+
+  <script src="popup.js" type="module"></script>
+</body>
+</html>

@@ -1,0 +1,291 @@
+/*
+ * linkedin-ui.css — Injected styles for LinkedIn DOM integration
+ *
+ * Injected into LinkedIn pages via manifest.json content_scripts.
+ * All selectors are prefixed with .lea- to avoid conflicts.
+ */
+
+/* ---------------------------------------------------------------------------
+   Action toolbar (injected below the social actions bar)
+   --------------------------------------------------------------------------- */
+
+.lea-action-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 6px 12px 4px;
+  flex-wrap: wrap;
+}
+
+.lea-action-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 5px 10px;
+  background: #f3f2ef;
+  border: 1px solid #e0dfdc;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 500;
+  color: #444;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.lea-action-btn:hover {
+  background: #0A66C2;
+  border-color: #0A66C2;
+  color: #ffffff;
+}
+
+.lea-action-btn:focus-visible {
+  outline: 2px solid #0A66C2;
+  outline-offset: 2px;
+}
+
+.lea-action-btn.lea-loading {
+  opacity: 0.6;
+  cursor: wait;
+}
+
+.lea-action-btn.lea-loading .lea-btn-icon::after {
+  content: '';
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border: 1.5px solid currentColor;
+  border-top-color: transparent;
+  border-radius: 50%;
+  animation: lea-spin 0.6s linear infinite;
+  margin-left: 4px;
+  vertical-align: middle;
+}
+
+.lea-btn-icon {
+  font-size: 13px;
+  line-height: 1;
+}
+
+.lea-btn-label {
+  font-size: 12px;
+}
+
+@keyframes lea-spin {
+  to { transform: rotate(360deg); }
+}
+
+/* Dark mode compatibility */
+@media (prefers-color-scheme: dark) {
+  .lea-action-btn {
+    background: #283339;
+    border-color: #38434f;
+    color: #e7e9ea;
+  }
+  .lea-action-btn:hover {
+    background: #0A66C2;
+    border-color: #0A66C2;
+    color: #fff;
+  }
+}
+
+/* ---------------------------------------------------------------------------
+   Reply panel — fixed bottom-right overlay
+   Always visible regardless of scroll position / comment thread length
+   --------------------------------------------------------------------------- */
+
+.lea-reply-panel {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  z-index: 2147483647; /* max z-index — above LinkedIn's own overlays */
+  width: 360px;
+  max-width: calc(100vw - 32px);
+  max-height: 80vh;
+  display: flex;
+  flex-direction: column;
+  background: #ffffff;
+  border: 1px solid #e0dfdc;
+  border-radius: 12px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.18), 0 2px 8px rgba(0, 0, 0, 0.08);
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-size: 13px;
+  color: #191919;
+  overflow: hidden;
+  /* Slide-in from bottom-right */
+  transform: translateY(20px);
+  opacity: 0;
+  transition: transform 0.22s ease, opacity 0.22s ease;
+  pointer-events: none;
+}
+
+.lea-reply-panel.lea-reply-panel--visible {
+  transform: translateY(0);
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.lea-reply-panel__header {
+  display: flex;
+  align-items: center;
+  padding: 10px 14px;
+  background: #f3f2ef;
+  border-bottom: 1px solid #e0dfdc;
+  gap: 8px;
+}
+
+.lea-reply-panel__title {
+  font-weight: 600;
+  font-size: 13px;
+  flex: 1;
+}
+
+.lea-score {
+  font-size: 11px;
+  font-weight: 700;
+  padding: 2px 7px;
+  border-radius: 10px;
+}
+
+.lea-score--high { background: #e8f5e9; color: #057642; }
+.lea-score--mid { background: #fff8e1; color: #e6a817; }
+.lea-score--low { background: #fce4ec; color: #b74700; }
+
+.lea-panel-close {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 14px;
+  color: #666;
+  padding: 2px 4px;
+  border-radius: 4px;
+  transition: background 0.15s;
+  line-height: 1;
+}
+.lea-panel-close:hover { background: #e0dfdc; color: #191919; }
+
+.lea-reply-panel__content {
+  padding: 12px 14px;
+  overflow-y: auto;
+  flex: 1;
+  min-height: 0;
+}
+
+.lea-reply-text {
+  font-size: 13px;
+  line-height: 1.6;
+  color: #191919;
+  white-space: pre-wrap;
+  word-break: break-word;
+  margin: 0;
+}
+
+.lea-reasoning {
+  margin: 0 14px 6px;
+  font-size: 12px;
+}
+
+.lea-reasoning summary {
+  cursor: pointer;
+  color: #666;
+  font-size: 11px;
+  margin-bottom: 4px;
+}
+
+.lea-reasoning p {
+  color: #666;
+  font-size: 11px;
+  line-height: 1.5;
+  padding: 6px;
+  background: #f3f2ef;
+  border-radius: 4px;
+}
+
+.lea-reply-panel__actions {
+  display: flex;
+  gap: 7px;
+  padding: 10px 14px;
+  border-top: 1px solid #e0dfdc;
+  flex-wrap: wrap;
+}
+
+.lea-btn-insert.lea-btn-primary {
+  padding: 7px 14px;
+  background: #0A66C2;
+  color: #ffffff;
+  border: none;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.lea-btn-insert.lea-btn-primary:hover { background: #004182; }
+
+.lea-btn-copy,
+.lea-btn-save {
+  padding: 7px 12px;
+  background: transparent;
+  border: 1px solid #0A66C2;
+  color: #0A66C2;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.lea-btn-copy:hover,
+.lea-btn-save:hover {
+  background: rgba(10, 102, 194, 0.08);
+}
+
+@media (prefers-color-scheme: dark) {
+  .lea-reply-panel {
+    background: #1d2226;
+    border-color: #38434f;
+    color: #e7e9ea;
+  }
+  .lea-reply-panel__header {
+    background: #283339;
+    border-color: #38434f;
+  }
+  .lea-reply-text { color: #e7e9ea; }
+  .lea-reasoning p { background: #283339; color: #8899a6; }
+  .lea-reply-panel__actions { border-color: #38434f; }
+}
+
+/* ---------------------------------------------------------------------------
+   Toast notification
+   --------------------------------------------------------------------------- */
+
+.lea-toast {
+  position: fixed;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%) translateY(10px);
+  background: #191919;
+  color: #ffffff;
+  padding: 9px 18px;
+  border-radius: 20px;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-size: 12px;
+  font-weight: 500;
+  z-index: 99999;
+  opacity: 0;
+  transition: opacity 0.25s ease, transform 0.25s ease;
+  pointer-events: none;
+  white-space: nowrap;
+  max-width: 90vw;
+  text-align: center;
+}
+
+.lea-toast--visible {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+
+.lea-toast--success { background: #057642; }
+.lea-toast--error { background: #b74700; }
+.lea-toast--info { background: #0A66C2; }

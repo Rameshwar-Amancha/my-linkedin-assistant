@@ -1,0 +1,394 @@
+openapi: "3.1.0"
+info:
+  title: LinkedIn Engagement Assistant API
+  version: "1.0.0"
+  description: |
+    Backend API for the LinkedIn Engagement Assistant Chrome Extension.
+    
+    All endpoints (except /api/health) require an `X-API-Key` header matching
+    the `API_SECRET_KEY` configured in the backend environment.
+    
+    **Important**: This API assists content *creation only*. It never auto-submits
+    posts, sends messages, or takes any action on LinkedIn on behalf of users.
+    Every action requires explicit user confirmation in the extension UI.
+
+servers:
+  - url: http://localhost:8000
+    description: Local development server
+
+components:
+  securitySchemes:
+    ApiKeyAuth:
+      type: apiKey
+      in: header
+      name: X-API-Key
+
+  schemas:
+    ErrorResponse:
+      type: object
+      required: [detail]
+      properties:
+        detail:
+          type: string
+        request_id:
+          type: string
+
+    DraftReplyRequest:
+      type: object
+      required: [post_content, tone, persona]
+      properties:
+        author_name:
+          type: string
+          maxLength: 200
+        author_role:
+          type: string
+          maxLength: 200
+        post_content:
+          type: string
+          minLength: 10
+          maxLength: 5000
+        media_context:
+          type: string
+          maxLength: 500
+        tone:
+          type: string
+          enum: [professional, concise, expert, contrarian, founder, recruiter, thoughtful_question]
+        persona:
+          type: string
+          enum: [senior_engineer, product_manager, executive, entrepreneur, researcher, consultant]
+        comment_context:
+          type: string
+          maxLength: 2000
+
+    DraftReplyResponse:
+      type: object
+      required: [reply, reasoning, engagement_score, tone_used, tokens_used]
+      properties:
+        reply:
+          type: string
+        reasoning:
+          type: string
+        engagement_score:
+          type: integer
+          minimum: 0
+          maximum: 10
+        tone_used:
+          type: string
+        tokens_used:
+          type: integer
+
+    PostVariation:
+      type: object
+      required: [content, hashtags, engagement_prediction, word_count]
+      properties:
+        content:
+          type: string
+        hashtags:
+          type: array
+          items:
+            type: string
+        engagement_prediction:
+          type: integer
+          minimum: 0
+          maximum: 10
+        word_count:
+          type: integer
+
+    GeneratePostRequest:
+      type: object
+      required: [topic, style, persona]
+      properties:
+        topic:
+          type: string
+          minLength: 10
+          maxLength: 1000
+        style:
+          type: string
+          enum: [professional, educational, founder, technical, viral, concise_authority]
+        persona:
+          type: string
+          enum: [senior_engineer, product_manager, executive, entrepreneur, researcher, consultant]
+        variations:
+          type: integer
+          minimum: 1
+          maximum: 5
+          default: 3
+        include_cta:
+          type: boolean
+          default: true
+        include_hashtags:
+          type: boolean
+          default: true
+        storytelling_mode:
+          type: boolean
+          default: false
+        additional_context:
+          type: string
+          maxLength: 500
+
+    GeneratePostResponse:
+      type: object
+      required: [variations, topic_analyzed, tokens_used]
+      properties:
+        variations:
+          type: array
+          items:
+            $ref: "#/components/schemas/PostVariation"
+        topic_analyzed:
+          type: string
+        tokens_used:
+          type: integer
+
+    PostScores:
+      type: object
+      required: [hook_strength, readability, authority_signals, emotional_triggers, cta_effectiveness, overall]
+      properties:
+        hook_strength:
+          type: integer
+          minimum: 0
+          maximum: 10
+        readability:
+          type: integer
+          minimum: 0
+          maximum: 10
+        authority_signals:
+          type: integer
+          minimum: 0
+          maximum: 10
+        emotional_triggers:
+          type: integer
+          minimum: 0
+          maximum: 10
+        cta_effectiveness:
+          type: integer
+          minimum: 0
+          maximum: 10
+        overall:
+          type: integer
+          minimum: 0
+          maximum: 10
+
+    AnalyzePostRequest:
+      type: object
+      required: [content]
+      properties:
+        content:
+          type: string
+          minLength: 20
+          maxLength: 5000
+        mode:
+          type: string
+          enum: [full, quick, summarize]
+          default: full
+
+    AnalyzePostResponse:
+      type: object
+      required: [scores, recommendations, summary, tokens_used]
+      properties:
+        scores:
+          $ref: "#/components/schemas/PostScores"
+        recommendations:
+          type: array
+          items:
+            type: string
+        summary:
+          type: string
+        tokens_used:
+          type: integer
+
+    TrendItem:
+      type: object
+      required: [topic, source, url, engagement_potential, suggested_angle, fetched_at]
+      properties:
+        topic:
+          type: string
+        source:
+          type: string
+        url:
+          type: string
+          format: uri
+        engagement_potential:
+          type: integer
+          minimum: 0
+          maximum: 10
+        suggested_angle:
+          type: string
+        published_at:
+          type: string
+          format: date-time
+
+    TrendsResponse:
+      type: object
+      required: [trends, cached, fetched_at]
+      properties:
+        trends:
+          type: array
+          items:
+            $ref: "#/components/schemas/TrendItem"
+        cached:
+          type: boolean
+        fetched_at:
+          type: string
+
+    HealthResponse:
+      type: object
+      required: [status, version]
+      properties:
+        status:
+          type: string
+          enum: [ok, degraded]
+        version:
+          type: string
+        llm_provider:
+          type: string
+
+security:
+  - ApiKeyAuth: []
+
+paths:
+  /api/health:
+    get:
+      summary: Health check
+      description: Returns API status. No authentication required.
+      security: []
+      operationId: health_check
+      tags: [Health]
+      responses:
+        "200":
+          description: API is healthy
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HealthResponse"
+
+  /api/draft-reply:
+    post:
+      summary: Generate a reply draft
+      description: |
+        Generate a thoughtful reply draft for a LinkedIn post.
+        Returns a draft only — never posts or submits anything automatically.
+      operationId: draft_reply
+      tags: [Reply]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DraftReplyRequest"
+      responses:
+        "200":
+          description: Reply draft generated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DraftReplyResponse"
+        "400":
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "401":
+          description: Invalid or missing API key
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "503":
+          description: LLM service unavailable
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /api/generate-post:
+    post:
+      summary: Generate LinkedIn post variations
+      description: |
+        Generate multiple LinkedIn post drafts on a given topic.
+        Returns drafts only — user must manually copy and post to LinkedIn.
+      operationId: generate_post
+      tags: [Post]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/GeneratePostRequest"
+      responses:
+        "200":
+          description: Post variations generated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GeneratePostResponse"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "503":
+          $ref: "#/components/responses/ServiceUnavailable"
+
+  /api/analyze-post:
+    post:
+      summary: Analyze a LinkedIn post for quality
+      operationId: analyze_post
+      tags: [Analysis]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AnalyzePostRequest"
+      responses:
+        "200":
+          description: Post analysis complete
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AnalyzePostResponse"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+
+  /api/trends:
+    get:
+      summary: Fetch trending topics
+      description: Returns trending topics from public sources (HN, RSS feeds). Cached for 30 minutes.
+      operationId: get_trends
+      tags: [Trends]
+      parameters:
+        - name: category
+          in: query
+          schema:
+            type: string
+            enum: [tech, ai, business, leadership, startups]
+          description: Optional category filter
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 50
+            default: 15
+      responses:
+        "200":
+          description: Trends retrieved
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TrendsResponse"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+
+components:
+  responses:
+    Unauthorized:
+      description: Invalid or missing API key
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+    ServiceUnavailable:
+      description: LLM service unavailable
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"

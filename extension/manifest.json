@@ -1,0 +1,81 @@
+{
+  "manifest_version": 3,
+  "name": "LinkedIn Engagement Assistant",
+  "version": "1.0.0",
+  "description": "AI-assisted LinkedIn engagement: draft replies, generate posts, discover trends. All actions require user confirmation.",
+
+  "permissions": [
+    "activeTab",
+    "storage",
+    "scripting",
+    "tabs",
+    "sidePanel"
+  ],
+
+  "host_permissions": [
+    "https://*.linkedin.com/*",
+    "http://localhost:8000/*",
+    "https://localhost:8000/*"
+  ],
+
+  "background": {
+    "service_worker": "background.js"
+  },
+
+  "content_scripts": [
+    {
+      "matches": ["https://*.linkedin.com/*"],
+      "js": [
+        "content/extractor.js",
+        "content/injector.js",
+        "content/content.js"
+      ],
+      "css": ["styles/linkedin-ui.css"],
+      "run_at": "document_idle",
+      "all_frames": false
+    }
+  ],
+
+  "action": {
+    "default_popup": "popup/popup.html",
+    "default_title": "LinkedIn Engagement Assistant",
+    "default_icon": {
+      "16": "assets/icons/icon16.png",
+      "32": "assets/icons/icon32.png",
+      "48": "assets/icons/icon48.png",
+      "128": "assets/icons/icon128.png"
+    }
+  },
+
+  "side_panel": {
+    "default_path": "sidebar/sidebar.html"
+  },
+
+  "icons": {
+    "16": "assets/icons/icon16.png",
+    "32": "assets/icons/icon32.png",
+    "48": "assets/icons/icon48.png",
+    "128": "assets/icons/icon128.png"
+  },
+
+  "content_security_policy": {
+    "extension_pages": "script-src 'self'; object-src 'self';"
+  },
+
+  "commands": {
+    "open-sidebar": {
+      "suggested_key": {
+        "default": "Ctrl+Shift+L",
+        "mac": "Command+Shift+L"
+      },
+      "description": "Open LinkedIn Engagement Assistant sidebar"
+    }
+  },
+
+  "web_accessible_resources": [
+    {
+      "resources": ["assets/*", "styles/*"],
+      "matches": ["https://*.linkedin.com/*"]
+    }
+  ]
+}
