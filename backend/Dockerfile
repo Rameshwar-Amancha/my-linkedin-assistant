@@ -2,7 +2,7 @@ FROM python:3.11-slim
 
 RUN useradd --create-home --shell /bin/bash appuser
 
-WORKDIR /app
+WORKDIR /app/backend
 
 COPY backend/requirements.txt ./requirements.txt
 RUN pip install --upgrade pip \
