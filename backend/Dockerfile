@@ -1,17 +1,14 @@
-# ─── Build stage ───────────────────────────────────────────────────────────
-FROM python:3.11-slim AS builder
-
-WORKDIR /build
-COPY backend/requirements.txt ./requirements.txt
-RUN pip install --upgrade pip \
-    && pip install --no-cache-dir --prefix=/install -r requirements.txt
-
-# ─── Runtime stage ──────────────────────────────────────────────────────────
 FROM python:3.11-slim
 
 RUN useradd --create-home --shell /bin/bash appuser
 
 WORKDIR /app
+
+COPY backend/requirements.txt ./requirements.txt
+RUN pip install --upgrade pip \
+    && pip install --no-cache-dir -r requirements.txt \
+    && rm -rf /root/.cache/pip
+
 COPY . .
 
 RUN mkdir -p /data && chown appuser:appuser /data
