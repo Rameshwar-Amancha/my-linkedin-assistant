@@ -100,15 +100,22 @@ class Settings(BaseSettings):
     @field_validator("ALLOWED_ORIGINS", mode="before")
     @classmethod
     def parse_origins(cls, v):
-        if isinstance(v, str):
-            v = v.strip()
-            # JSON array format (used by pydantic-settings dotenv source)
-            if v.startswith("["):
-                import json
-                return json.loads(v)
-            # Comma-separated fallback (e.g. set via shell env var)
-            return [origin.strip() for origin in v.split(",") if origin.strip()]
-        return v
+        if isinstance(v, list):
+            return [str(item).strip() for item in v if str(item).strip()]
+        if not isinstance(v, str):
+            return []
+        v = v.strip()
+        if not v:
+            return []
+        if v.startswith("["):
+            import json
+            try:
+                parsed = json.loads(v)
+                if isinstance(parsed, list):
+                    return [str(item).strip() for item in parsed if str(item).strip()]
+            except (json.JSONDecodeError, TypeError):
+                pass
+        return [origin.strip() for origin in v.split(",") if origin.strip()]
 
     @field_validator("LOG_LEVEL")
     @classmethod
