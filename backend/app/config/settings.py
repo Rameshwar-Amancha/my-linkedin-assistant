@@ -43,7 +43,7 @@ class Settings(BaseSettings):
     # Security
     # -----------------------------------------------------------------------
     API_SECRET_KEY: str  # Required — no default
-    ALLOWED_ORIGINS: list[str] = ["chrome-extension://*", "http://localhost:3000"]
+    ALLOWED_ORIGINS: str = "chrome-extension://*,http://localhost:3000"
 
     # Rate limiting
     RATE_LIMIT_REQUESTS: int = 60
