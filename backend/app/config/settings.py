@@ -6,9 +6,10 @@ Never hardcode secrets in source code.
 """
 
 import logging
+import os
 from functools import lru_cache
 from pathlib import Path
-from typing import Literal
+from typing import Any
 
 from pydantic import field_validator, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
@@ -29,7 +30,7 @@ class Settings(BaseSettings):
     # -----------------------------------------------------------------------
     # Server
     # -----------------------------------------------------------------------
-    HOST: str = "0.0.0.0"   # Bind to all interfaces; use 127.0.0.1 to restrict to localhost only
+    HOST: str = "0.0.0.0"
     PORT: int = 8000
 
     # -----------------------------------------------------------------------
@@ -42,8 +43,8 @@ class Settings(BaseSettings):
     # -----------------------------------------------------------------------
     # Security
     # -----------------------------------------------------------------------
-    API_SECRET_KEY: str  # Required — no default
-    ALLOWED_ORIGINS: str = "chrome-extension://*,http://localhost:3000"
+    API_SECRET_KEY: str
+    ALLOWED_ORIGINS: Any = ["chrome-extension://*", "http://localhost:3000"]
 
     # Rate limiting
     RATE_LIMIT_REQUESTS: int = 60
@@ -57,7 +58,7 @@ class Settings(BaseSettings):
     # -----------------------------------------------------------------------
     # LLM Provider
     # -----------------------------------------------------------------------
-    LLM_PROVIDER: Literal["openai", "gemini", "anthropic"] = "openai"
+    LLM_PROVIDER: str = "openai"
 
     # OpenAI
     OPENAI_API_KEY: str = ""
@@ -76,14 +77,14 @@ class Settings(BaseSettings):
     # -----------------------------------------------------------------------
     # Caching
     # -----------------------------------------------------------------------
-    REDIS_URL: str = ""  # Optional — in-memory cache used if empty
-    TRENDS_CACHE_TTL_SECONDS: int = 1800  # 30 minutes
-    REPLY_CACHE_TTL_SECONDS: int = 0  # Disabled by default (replies are personalized)
+    REDIS_URL: str = ""
+    TRENDS_CACHE_TTL_SECONDS: int = 1800
+    REPLY_CACHE_TTL_SECONDS: int = 0
 
     # -----------------------------------------------------------------------
     # Webhooks
     # -----------------------------------------------------------------------
-    WEBHOOK_SIGNING_SECRET: str = ""  # HMAC secret for outbound webhooks; auto-generated if empty
+    WEBHOOK_SIGNING_SECRET: str = ""
 
     # -----------------------------------------------------------------------
     # Scraping / Trends
@@ -100,22 +101,46 @@ class Settings(BaseSettings):
     @field_validator("ALLOWED_ORIGINS", mode="before")
     @classmethod
     def parse_origins(cls, v):
+        import json
+
         if isinstance(v, list):
-            return [str(item).strip() for item in v if str(item).strip()]
-        if not isinstance(v, str):
-            return []
-        v = v.strip()
-        if not v:
-            return []
-        if v.startswith("["):
-            import json
-            try:
-                parsed = json.loads(v)
-                if isinstance(parsed, list):
-                    return [str(item).strip() for item in parsed if str(item).strip()]
-            except (json.JSONDecodeError, TypeError):
-                pass
-        return [origin.strip() for origin in v.split(",") if origin.strip()]
+            result = []
+            for item in v:
+                s = str(item).strip()
+                if not s:
+                    continue
+                if s.startswith("["):
+                    try:
+                        parsed = json.loads(s)
+                        if isinstance(parsed, list):
+                            for sub in parsed:
+                                sub_s = str(sub).strip()
+                                if sub_s:
+                                    result.extend(
+                                        origin.strip()
+                                        for origin in sub_s.split(",")
+                                        if origin.strip()
+                                    )
+                            continue
+                    except (json.JSONDecodeError, TypeError):
+                        pass
+                result.extend(
+                    origin.strip() for origin in s.split(",") if origin.strip()
+                )
+            return result
+        if isinstance(v, str):
+            v = v.strip()
+            if not v:
+                return []
+            if v.startswith("["):
+                try:
+                    parsed = json.loads(v)
+                    if isinstance(parsed, list):
+                        return [str(item).strip() for item in parsed if str(item).strip()]
+                except (json.JSONDecodeError, TypeError):
+                    pass
+            return [origin.strip() for origin in v.split(",") if origin.strip()]
+        return []
 
     @field_validator("LOG_LEVEL")
     @classmethod
@@ -140,7 +165,7 @@ class Settings(BaseSettings):
 @lru_cache(maxsize=1)
 def get_settings() -> Settings:
     """Return cached settings instance. Loaded once at startup."""
-    settings = Settings()  # type: ignore[call-arg]
+    settings = Settings()
     logging.basicConfig(
         level=getattr(logging, settings.LOG_LEVEL),
         format="%(asctime)s [%(levelname)s] %(name)s (%(funcName)s:%(lineno)d) — %(message)s",
