@@ -66,59 +66,20 @@ def create_application() -> FastAPI:
     )
 
     # -----------------------------------------------------------------------
-    # CORS — restrict to configured origins only
+    # CORS — allow all origins
     #
-    # NOTE: Starlette's CORSMiddleware does NOT support wildcard patterns
-    # inside allow_origins (e.g. "chrome-extension://*"). Instead we use
-    # allow_origin_regex to match all chrome-extension://<any-id> origins,
-    # and keep allow_origins for exact-match origins (localhost, etc.).
+    # The API is protected by API key authentication (X-API-Key header), so
+    # CORS restrictions are redundant. Allowing all origins (*) ensures the
+    # Chrome extension (and any future clients) can reach the API without
+    # CORS errors, while the API key remains the sole gatekeeper.
     # -----------------------------------------------------------------------
-    exact_origins: list[str] = []
-    regex_patterns: list[str] = []
-
-    for origin in settings.ALLOWED_ORIGINS:
-        origin_str = str(origin).strip()
-        if not origin_str:
-            continue
-
-        if "chrome-extension://" in origin_str:
-            # Match any Chrome extension origin via regex.
-            # Extension IDs are 32 characters (a-p), but we match broadly.
-            regex_patterns.append(r"chrome-extension://[a-z]+")
-
-        elif "brave://" in origin_str:
-            # Brave extension pages — exact match
-            exact_origins.append(origin_str)
-
-        elif origin_str == "*":
-            # Wildcard — allow all origins
-            exact_origins.append("*")
-
-        elif origin_str.startswith("https://*.") or origin_str.startswith("http://*."):
-            # Wildcard subdomain pattern like https://*.example.com
-            escaped = re.escape(origin_str)
-            regex_patterns.append(escaped.replace(r"\*", "[a-zA-Z0-9.-]+"))
-
-        else:
-            exact_origins.append(origin_str)
-
-    # Build middleware kwargs
-    cors_kwargs: dict[str, Any] = {
-        "allow_credentials": False,  # No cookies used
-        "allow_methods": ["GET", "POST", "PATCH", "DELETE"],
-        "allow_headers": ["Content-Type", "X-API-Key", "X-Request-ID", "X-Extension-Version"],
-    }
-
-    if regex_patterns:
-        # Combine multiple regex patterns with | (OR)
-        cors_kwargs["allow_origin_regex"] = "|".join(regex_patterns)
-
-    if exact_origins:
-        cors_kwargs["allow_origins"] = exact_origins
-    else:
-        cors_kwargs["allow_origins"] = []  # at least empty list
-
-    application.add_middleware(CORSMiddleware, **cors_kwargs)
+    application.add_middleware(
+        CORSMiddleware,
+        allow_origins=["*"],
+        allow_credentials=False,
+        allow_methods=["GET", "POST", "PATCH", "DELETE"],
+        allow_headers=["Content-Type", "X-API-Key", "X-Request-ID", "X-Extension-Version"],
+    )
 
     # -----------------------------------------------------------------------
     # Custom middleware
