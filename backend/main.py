@@ -11,9 +11,11 @@ Configures:
 """
 
 import logging
+import re
 import time
 import uuid
 from contextlib import asynccontextmanager
+from typing import Any
 
 from fastapi import FastAPI, Request, status
 from fastapi.middleware.cors import CORSMiddleware
@@ -65,14 +67,44 @@ def create_application() -> FastAPI:
 
     # -----------------------------------------------------------------------
     # CORS — restrict to configured origins only
+    #
+    # NOTE: Starlette's CORSMiddleware does NOT support wildcard patterns
+    # inside allow_origins (e.g. "chrome-extension://*"). Instead we use
+    # allow_origin_regex to match all chrome-extension://<any-id> origins,
+    # and keep allow_origins for exact-match origins (localhost, etc.).
     # -----------------------------------------------------------------------
-    application.add_middleware(
-        CORSMiddleware,
-        allow_origins=settings.ALLOWED_ORIGINS,
-        allow_credentials=False,  # No cookies used
-        allow_methods=["GET", "POST", "PATCH", "DELETE"],
-        allow_headers=["Content-Type", "X-API-Key", "X-Request-ID", "X-Extension-Version"],
-    )
+    exact_origins: list[str] = []
+    chrome_extension_regex: str | None = None
+
+    for origin in settings.ALLOWED_ORIGINS:
+        origin_str = str(origin).strip()
+        if not origin_str:
+            continue
+        if "chrome-extension://" in origin_str:
+            # Match any Chrome extension origin via regex
+            chrome_extension_regex = r"chrome-extension://[a-z]+"
+        elif origin_str == "*":
+            # Wildcard — allow all
+            exact_origins.append("*")
+        else:
+            exact_origins.append(origin_str)
+
+    # Build middleware kwargs
+    cors_kwargs: dict[str, Any] = {
+        "allow_credentials": False,  # No cookies used
+        "allow_methods": ["GET", "POST", "PATCH", "DELETE"],
+        "allow_headers": ["Content-Type", "X-API-Key", "X-Request-ID", "X-Extension-Version"],
+    }
+
+    if chrome_extension_regex:
+        cors_kwargs["allow_origin_regex"] = chrome_extension_regex
+
+    if exact_origins:
+        cors_kwargs["allow_origins"] = exact_origins
+    else:
+        cors_kwargs["allow_origins"] = []  # at least empty list
+
+    application.add_middleware(CORSMiddleware, **cors_kwargs)
 
     # -----------------------------------------------------------------------
     # Custom middleware

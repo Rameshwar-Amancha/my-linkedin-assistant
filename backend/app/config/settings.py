@@ -45,6 +45,11 @@ class Settings(BaseSettings):
     # -----------------------------------------------------------------------
     API_SECRET_KEY: str
     ALLOWED_ORIGINS: Any = ["chrome-extension://*", "http://localhost:3000"]
+    # NOTE: chrome-extension://* is parsed by main.py's CORS logic to use
+    #       allow_origin_regex instead of allow_origins, because Starlette
+    #       does not support wildcards in allow_origins values.
+    #       You can also list specific extension IDs, which will be matched
+    #       exactly (faster) — but * is the simplest for development.
 
     # Rate limiting
     RATE_LIMIT_REQUESTS: int = 60
