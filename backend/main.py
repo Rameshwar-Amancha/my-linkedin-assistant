@@ -74,18 +74,31 @@ def create_application() -> FastAPI:
     # and keep allow_origins for exact-match origins (localhost, etc.).
     # -----------------------------------------------------------------------
     exact_origins: list[str] = []
-    chrome_extension_regex: str | None = None
+    regex_patterns: list[str] = []
 
     for origin in settings.ALLOWED_ORIGINS:
         origin_str = str(origin).strip()
         if not origin_str:
             continue
+
         if "chrome-extension://" in origin_str:
-            # Match any Chrome extension origin via regex
-            chrome_extension_regex = r"chrome-extension://[a-z]+"
+            # Match any Chrome extension origin via regex.
+            # Extension IDs are 32 characters (a-p), but we match broadly.
+            regex_patterns.append(r"chrome-extension://[a-z]+")
+
+        elif "brave://" in origin_str:
+            # Brave extension pages — exact match
+            exact_origins.append(origin_str)
+
         elif origin_str == "*":
-            # Wildcard — allow all
+            # Wildcard — allow all origins
             exact_origins.append("*")
+
+        elif origin_str.startswith("https://*.") or origin_str.startswith("http://*."):
+            # Wildcard subdomain pattern like https://*.example.com
+            escaped = re.escape(origin_str)
+            regex_patterns.append(escaped.replace(r"\*", "[a-zA-Z0-9.-]+"))
+
         else:
             exact_origins.append(origin_str)
 
@@ -96,8 +109,9 @@ def create_application() -> FastAPI:
         "allow_headers": ["Content-Type", "X-API-Key", "X-Request-ID", "X-Extension-Version"],
     }
 
-    if chrome_extension_regex:
-        cors_kwargs["allow_origin_regex"] = chrome_extension_regex
+    if regex_patterns:
+        # Combine multiple regex patterns with | (OR)
+        cors_kwargs["allow_origin_regex"] = "|".join(regex_patterns)
 
     if exact_origins:
         cors_kwargs["allow_origins"] = exact_origins
